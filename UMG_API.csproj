@@ -176,7 +176,9 @@
     <Compile Include="Models\DTO\LoginDto.cs" />
     <Compile Include="Models\DTO\LoginResponseDto.cs" />
     <Compile Include="Models\DTO\ReservaCreateDto.cs" />
+    <Compile Include="Models\DTO\ResetearContrasenaDto.cs" />
     <Compile Include="Models\DTO\UsuarioCreateDto.cs" />
+    <Compile Include="Models\DTO\UsuarioListDto.cs" />
     <Compile Include="Models\Lab.cs" />
     <Compile Include="Models\LogEntry.cs" />
     <Compile Include="Models\Reserva.cs" />

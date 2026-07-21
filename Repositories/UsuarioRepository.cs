@@ -86,6 +86,85 @@ namespace UMG_API.Repositories
             }
         }
 
+        // Inactivar usuario (RF de administración)
+        public bool Inactivar(int userId)
+        {
+            using (SqlConnection conn = Conexion.ObtenerConexion())
+            {
+                conn.Open();
+                string query = "UPDATE UMG_USERS SET UMG_Estado = 0 WHERE UMG_ID = @UserId";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
+                    int filas = cmd.ExecuteNonQuery();
+                    return filas > 0;
+                }
+            }
+        }
+
+        // Resetear contraseña (usuario olvidó su clave) - Admin le asigna una temporal
+        public bool ResetearContrasena(int userId, string contrasenaTemporal)
+        {
+            using (SqlConnection conn = Conexion.ObtenerConexion())
+            {
+                conn.Open();
+                string query = @"UPDATE UMG_USERS 
+                          SET UMG_Contrasena = @Contrasena,
+                              UMG_Ingreso = 0,
+                              UMG_Fecha_Modifica_Contrasena = GETDATE()
+                          WHERE UMG_ID = @UserId";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.Add("@Contrasena", SqlDbType.VarChar, 255).Value = contrasenaTemporal;
+                    cmd.Parameters.Add("@UserId", SqlDbType.Int).Value = userId;
+                    int filas = cmd.ExecuteNonQuery();
+                    return filas > 0;
+                }
+            }
+        }
+        public List<UsuarioListDto> ObtenerTodos()
+        {
+            var usuarios = new List<UsuarioListDto>();
+
+            using (SqlConnection conn = Conexion.ObtenerConexion())
+            {
+                conn.Open();
+
+                string query = @"SELECT u.UMG_ID, u.UMG_Usuario, u.UMG_Nombre, u.UMG_Apellido,
+                                 u.UMG_Rol_ID, r.UMG_Nombre AS UMG_Rol_Nombre, u.UMG_Estado,
+                                 u.UMG_Ingreso, u.UMG_Fecha_Creacion, u.UMG_Ultimo_Acceso
+                          FROM UMG_USERS u
+                          INNER JOIN UMG_ROLES r ON u.UMG_Rol_ID = r.UMG_ID
+                          ORDER BY u.UMG_Nombre, u.UMG_Apellido";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        usuarios.Add(new UsuarioListDto
+                        {
+                            UMG_ID = Convert.ToInt32(reader["UMG_ID"]),
+                            UMG_Usuario = reader["UMG_Usuario"].ToString(),
+                            UMG_Nombre = reader["UMG_Nombre"].ToString(),
+                            UMG_Apellido = reader["UMG_Apellido"].ToString(),
+                            UMG_Rol_ID = Convert.ToInt32(reader["UMG_Rol_ID"]),
+                            UMG_Rol_Nombre = reader["UMG_Rol_Nombre"].ToString(),
+                            UMG_Estado = Convert.ToInt32(reader["UMG_Estado"]),
+                            UMG_Ingreso = Convert.ToInt32(reader["UMG_Ingreso"]),
+                            UMG_Fecha_Creacion = Convert.ToDateTime(reader["UMG_Fecha_Creacion"]),
+                            UMG_Ultimo_Acceso = reader["UMG_Ultimo_Acceso"] == DBNull.Value
+                                ? (DateTime?)null
+                                : Convert.ToDateTime(reader["UMG_Ultimo_Acceso"])
+                        });
+                    }
+                }
+            }
+
+            return usuarios;
+        }
         public LoginResponseDto ValidarCredenciales(string correo, string contrasena)
         {
             using (SqlConnection conn = Conexion.ObtenerConexion())
