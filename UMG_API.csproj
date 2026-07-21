@@ -170,6 +170,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\Condicion.cs" />
+    <Compile Include="Models\DTO\CambiarContrasenaDto.cs" />
     <Compile Include="Models\DTO\CondicionCreateDto.cs" />
     <Compile Include="Models\DTO\LabCreateDto.cs" />
     <Compile Include="Models\DTO\LoginDto.cs" />

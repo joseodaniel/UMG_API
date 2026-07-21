@@ -21,7 +21,7 @@ namespace UMG_API.Services
             if (usuario == null)
             {
                 _logService.Registrar(null, "LOGIN_FALLIDO", "Autenticación",
-                    $"Intento de inicio de sesión fallido para el correo '{correo}'.");
+                    $"Intento de inicio de sesión fallido para el correo '{correo.ToUpper()}'.");
 
                 throw new InvalidOperationException("Usuario o contraseña incorrectos.");
             }
@@ -32,6 +32,24 @@ namespace UMG_API.Services
                 $"El usuario '{usuario.UMG_Usuario}' inició sesión correctamente.");
 
             return usuario;
+        }
+
+        public void CambiarContrasena(int userId, string nuevaContrasena)
+        {
+            if (!_repository.ExisteUsuarioActivo(userId))
+            {
+                throw new ArgumentException("El usuario especificado no existe o está inactivo.");
+            }
+
+            if (string.IsNullOrWhiteSpace(nuevaContrasena) || nuevaContrasena.Length < 6)
+            {
+                throw new ArgumentException("La nueva contraseña debe tener al menos 6 caracteres.");
+            }
+
+            _repository.CambiarContrasena(userId, nuevaContrasena);
+
+            _logService.Registrar(userId, "CAMBIO_CONTRASENA", "Autenticación",
+                $"El usuario con ID {userId} actualizó su contraseña de primer ingreso.");
         }
     }
 }

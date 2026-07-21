@@ -39,5 +39,30 @@ namespace UMG_API.Controllers
                 return InternalServerError();
             }
         }
+
+        // POST api/auth/cambiar-contrasena
+        [HttpPost]
+        [Route("cambiar-contrasena")]
+        public IHttpActionResult CambiarContrasena([FromBody] CambiarContrasenaDto dto)
+        {
+            if (dto == null)
+            {
+                return BadRequest("El cuerpo de la solicitud no puede estar vacío.");
+            }
+
+            try
+            {
+                _service.CambiarContrasena(dto.UMG_ID, dto.NuevaContrasena);
+                return Content(HttpStatusCode.OK, new { mensaje = "Contraseña actualizada correctamente." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }
     }
 }
