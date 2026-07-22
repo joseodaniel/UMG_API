@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using UMG_API.Models;
+using UMG_API.Models.DTO;
 using UMG_API.Repositories;
 
 namespace UMG_API.Services
@@ -8,6 +10,48 @@ namespace UMG_API.Services
     {
         private readonly ReservaRepository _repository = new ReservaRepository();
         private readonly LogService _logService = new LogService();
+
+        public List<ReservaListDto> ObtenerTodas(int? labId, DateTime? fecha, int? userId)
+        {
+            return _repository.ObtenerTodas(labId, fecha, userId);
+        }
+
+        public ReservaListDto ObtenerPorId(int id)
+        {
+            var reserva = _repository.ObtenerPorId(id);
+
+            if (reserva == null)
+            {
+                throw new ArgumentException("La reserva especificada no existe.");
+            }
+
+            return reserva;
+        }
+
+        public void CancelarReserva(int id, int? userIdSolicitante)
+        {
+            var reserva = _repository.ObtenerPorId(id);
+
+            if (reserva == null)
+            {
+                throw new ArgumentException("La reserva especificada no existe.");
+            }
+
+            if (reserva.UMG_Estado == "C")
+            {
+                throw new InvalidOperationException("Esta reserva ya se encuentra cancelada.");
+            }
+
+            bool exito = _repository.Cancelar(id);
+
+            if (!exito)
+            {
+                throw new InvalidOperationException("No se pudo cancelar la reserva.");
+            }
+
+            _logService.Registrar(userIdSolicitante, "CANCELAR_RESERVA", "Reservas",
+                $"Se canceló la reserva con ID {id} (laboratorio: {reserva.UMG_Lab_Nombre}, fecha: {reserva.UMG_Fecha_Reserva:yyyy-MM-dd}).");
+        }
 
         public Reserva CrearReserva(int userId, int labId, DateTime fecha, TimeSpan horaInicio,
                                      TimeSpan horaFin, string motivo)

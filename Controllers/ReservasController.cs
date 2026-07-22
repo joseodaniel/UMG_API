@@ -11,6 +11,55 @@ namespace UMG_API.Controllers
     {
         private readonly ReservaService _service = new ReservaService();
 
+        // GET api/reservas?labId=1&fecha=2026-07-21&userId=3
+        [HttpGet]
+        [Route("")]
+        public IHttpActionResult Get(int? labId = null, DateTime? fecha = null, int? userId = null)
+        {
+            var reservas = _service.ObtenerTodas(labId, fecha, userId);
+            return Content(HttpStatusCode.OK, reservas);
+        }
+
+        // GET api/reservas/{id}
+        [HttpGet]
+        [Route("{id:int}")]
+        public IHttpActionResult GetPorId(int id)
+        {
+            try
+            {
+                var reserva = _service.ObtenerPorId(id);
+                return Content(HttpStatusCode.OK, reserva);
+            }
+            catch (ArgumentException ex)
+            {
+                return Content(HttpStatusCode.NotFound, new { mensaje = ex.Message });
+            }
+        }
+
+        // PATCH api/reservas/{id}/cancelar?userId=3
+        [HttpPatch]
+        [Route("{id:int}/cancelar")]
+        public IHttpActionResult Cancelar(int id, int? userId = null)
+        {
+            try
+            {
+                _service.CancelarReserva(id, userId);
+                return Content(HttpStatusCode.OK, new { mensaje = "Reserva cancelada correctamente." });
+            }
+            catch (ArgumentException ex)
+            {
+                return Content(HttpStatusCode.NotFound, new { mensaje = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Content(HttpStatusCode.Conflict, new { mensaje = ex.Message });
+            }
+            catch (Exception)
+            {
+                return InternalServerError();
+            }
+        }
+
         // POST api/reservas
         [HttpPost]
         [Route("")]

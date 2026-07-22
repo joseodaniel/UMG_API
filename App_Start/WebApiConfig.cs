@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace UMG_API
 {
@@ -10,6 +11,8 @@ namespace UMG_API
         public static void Register(HttpConfiguration config)
         {
             // Configuración y servicios de Web API
+            var cors = new EnableCorsAttribute("*", "*", "*");
+            config.EnableCors(cors);
 
             // Rutas de Web API
             config.MapHttpAttributeRoutes();
